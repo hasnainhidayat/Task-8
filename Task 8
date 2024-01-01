@@ -1,0 +1,101 @@
+# Constants for boat hire rates and operating hours
+HOURLY_RATE = 20
+HALF_HOUR_RATE = 12
+OPENING_TIME = 10
+CLOSING_TIME = 17
+
+# Data structure to store information for each boat
+boats_data = [{'total_money': 0, 'total_hours': 0, 'return_time': OPENING_TIME} for _ in range(10)]
+
+def calculate_money_and_hours(boat_number, duration):
+    if OPENING_TIME <= duration <= CLOSING_TIME:
+        current_boat_data = boats_data[boat_number - 1]
+        current_time = current_boat_data['return_time']
+        
+        if current_time > duration:
+            return "Error: Boat cannot be hired before 10:00."
+
+        if duration - current_time < 0.5:
+            money_taken = HALF_HOUR_RATE
+            total_hours_hired = current_boat_data['total_hours'] + 0.5
+        else:
+            money_taken = HOURLY_RATE
+            total_hours_hired = current_boat_data['total_hours'] + 1
+        
+        current_boat_data['total_money'] += money_taken
+        current_boat_data['total_hours'] = total_hours_hired
+        current_boat_data['return_time'] = duration
+
+        return money_taken, total_hours_hired
+    else:
+        return "Error: Boat cannot be hired before 10:00 or returned after 17:00."
+
+def task1():
+    print("TASK 1 – Calculate the money taken in a day for one boat")
+    
+    boat_number = int(input("Enter the boat number (1 to 10): "))
+    duration = float(input("Enter the duration of hire (10.0 to 17.0): "))
+
+    result = calculate_money_and_hours(boat_number, duration)
+
+    if isinstance(result, tuple):
+        money_taken, total_hours_hired = result
+        print(f"Money taken: ${money_taken}, Total hours hired: {total_hours_hired} hours")
+    else:
+        print(result)
+
+def find_next_available_boat(current_time):
+    next_available_time = CLOSING_TIME + 1
+
+    for i, boat_data in enumerate(boats_data, start=1):
+        if boat_data['return_time'] <= current_time:
+            next_available_time = min(next_available_time, OPENING_TIME)
+        else:
+            next_available_time = min(next_available_time, boat_data['return_time'])
+
+    return next_available_time
+
+def task2():
+    print("\nTASK 2 – Find the next boat available")
+
+    current_time = float(input("Enter the current time (10.0 to 17.0): "))
+
+    next_available_time = find_next_available_boat(current_time)
+
+    if next_available_time <= CLOSING_TIME:
+        print(f"\nNext available boat at {next_available_time:.1f}")
+    else:
+        print("\nNo boats are available for hire at the moment.")
+
+def calculate_totals_and_report():
+    total_money_taken = 0
+    total_hours_hired = 0
+    unused_boats = []
+    max_hours_boat = None
+
+    for i, boat_data in enumerate(boats_data, start=1):
+        total_money_taken += boat_data['total_money']
+        total_hours_hired += boat_data['total_hours']
+
+        if boat_data['total_hours'] == 0:
+            unused_boats.append(i)
+
+        if max_hours_boat is None or boat_data['total_hours'] > boats_data[max_hours_boat - 1]['total_hours']:
+            max_hours_boat = i
+
+    return total_money_taken, total_hours_hired, unused_boats, max_hours_boat
+
+def task3():
+    print("\nTASK 3 – Calculate the money taken for all the boats at the end of the day")
+
+    total_money, total_hours, unused_boats, max_hours_boat = calculate_totals_and_report()
+
+    print(f"\nTotal money taken: ${total_money}")
+    print(f"Total hours boats were hired: {total_hours} hours")
+    print(f"Boats not used: {unused_boats}")
+    print(f"Boat used the most: Boat {max_hours_boat}")
+
+if __name__ == "__main__":
+    task1()
+    task2()
+    task3()
